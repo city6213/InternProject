@@ -1,0 +1,293 @@
+
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>크롤링 데이터 관리</title>
+<script src="https://code.jquery.com/jquery-3.3.1.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<link
+	href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css"
+	rel="stylesheet"
+	integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1"
+	crossorigin="anonymous">
+<script
+	src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"
+	integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW"
+	crossorigin="anonymous"></script>
+<script
+	src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"
+	integrity="sha384-q2kxQ16AaE6UbzuKqyBE9/u/KzioAlnx2maXQHiDX9d4/zp8Ok3f+M7DPm+Ib6IU"
+	crossorigin="anonymous"></script>
+<script
+	src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.min.js"
+	integrity="sha384-pQQkAEnwaBkjpqZ8RU1fF1AKtTcHJwFl3pblpTlHXybJjHpMYo79HY3hIi4NKxyj"
+	crossorigin="anonymous"></script>
+
+
+<style>
+#container {
+	
+}
+
+#head {
+	height: 70px;
+}
+
+#nav {
+	
+}
+
+#content2 {
+	
+}
+
+#page {
+	
+}
+</style>
+<script type="text/javascript">
+	//크롤링 데이터 업데이트 및 수정하는 페이지로 이동
+	function updateAndDelete(prior, preLotteUrl, preShillaUrl, preHyundaiUrl) {
+		var json = prior
+		var productCode = encodeURIComponent(json.productCode);
+
+		location.href = "/detailprior?productCode=" + productCode
+				+ "&lotteUrl=" + json.lotteUrl + "&shillaUrl=" + json.shillaUrl
+				+ "&hyundaiUrl=" + json.hyundaiUrl + "&period=" + json.period
+				+ "&preLotteUrl=" + preLotteUrl + "&preShillaUrl="
+				+ preShillaUrl + "&preHyundaiUrl=" + preHyundaiUrl;
+
+	}
+	//크롤링 데이터를 등록하는 화면으로 이동
+	function registCrawlingData() {
+		location.href = "/registCrawlingData";
+	}
+
+	//검색 버튼을 누르면 serachPrior컨트롤러 호출
+	function searchPrior() {
+		var input = document.getElementById('search');
+		if (input.value.length > 45) {
+			alert("최대 45글자까지 입력 가능합니다!");
+			return;
+		}
+
+		var str = document.getElementById('search').value;
+		str = encodeURIComponent(str);
+		if (str == '') {
+			alert("상품코드를 입력하세요!");
+			document.getElementById('search').focus();
+			return;
+		} else {
+			location.href = "searchPrior?str=" + str;
+		}
+
+	}
+	//메인페이지로 이동
+	function goMainPage() {
+		location.href = "/index_crawling";
+	}
+
+	//검색창의 데이터 길이를 검사
+	function checkLength() {
+		var input = document.getElementById('search');
+		var notice = document.getElementById('notice');
+		if (input.value.length > 45) {
+			notice.style.visibility = 'visible';
+			return;
+		} else {
+			notice.style.visibility = 'hidden';
+		}
+	}
+	//액셀 다운로드
+	function excelDown(value, str, detail) {
+
+		if (confirm("데이터를 내려 받으시겠습니까?")) {
+
+			location.href = "/priorExcelDown.do?type=" + value + "&str=" + str
+					+ "&detail=" + detail;
+
+		} else {
+			reuturn;
+		}
+
+	}
+</script>
+
+</head>
+
+<body>
+
+	<div id="container">
+		<div id="head">
+			<ul class="nav nav-pills nav-fill">
+				<li class="nav-item"><a class="nav-link active"
+					aria-current="page" th:href="index_crawling">크롤링 데이터 관리</a></li>
+				<li class="nav-item"><a class="nav-link"
+					th:href="index_compareprice">현재가 비교</a></li>
+				
+			</ul>
+		</div>
+		<br> <br>
+		<div id="nav">
+			<nav class="navbar navbar-light">
+				<div class="container-fluid  d-flex justify-content-center">
+
+
+					<div>
+						<input class="form-control me-2" placeholder="상품코드 입력"
+							aria-label="Search" id="search" th:value="${searchKeyWord}"
+							onkeyup="checkLength()">
+					</div>
+					&nbsp;&nbsp;&nbsp;
+					<div>
+
+						<button class="btn btn-outline-success" th:onclick="searchPrior()"
+							style="float: right">검색</button>
+					</div>
+
+
+				</div>
+
+			</nav>
+		</div>
+		<div id="notice"
+			style="margin-right: 3%; margin-top: 5px; visibility: hidden">
+			<table border="0" wdith="100%" align="center">
+				<tr>
+					<td><font color="red">최대 45글자만 입력 가능합니다!</font></td>
+
+				</tr>
+			</table>
+		</div>
+		<div id="content2">
+			<div  style="margin-right: 1%">
+				<table width="100%">
+					<tr>
+						<td align="right"><button type="button"
+								class="btn btn-secondary" th:onclick="registCrawlingData()">크롤링
+								데이터 등록</button>
+
+							<div class="dropdown" style="float: right">
+								<!-- 	<a class="btn btn-secondary dropdown-toggle" href="#"
+							role="button" id="dropdownMenuLink" data-bs-toggle="dropdown"
+							aria-expanded="false"> Dropdown link </a> 
+
+						<ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+							<li><a class="dropdown-item" href="#">Action</a></li>
+							<li><a class="dropdown-item" href="#">Another action</a></li>
+							<li><a class="dropdown-item" href="#">Something else
+									here</a></li>
+						</ul> -->
+							</div></td>
+					</tr>
+				</table>
+			</div>
+
+			&nbsp;&nbsp;<b th:text="'총 '+${total}+'건'"></b>
+			<div class="table-responsive">
+				<table class="table  table-hover table-secondary" align="center"
+					style="overflow: atuo;">
+					<thead class="">
+						<tr th:align="center" valign="middle">
+							<th scope="col" width="100">번호</th>
+							<th scope="col" width="100">상품코드</th>
+							<th scope="col">롯데 URL</th>
+							<th scope="col">신라 URL</th>
+							<th scope="col">현대 URL</th>
+							<th scope="col">등록일</th>
+							<th scope="col" width="100">주기</th>
+						</tr>
+					</thead>
+					<tbody>
+
+						<th:block th:if="${total == 0}">
+							<tr>
+
+								<td colspan="7" align="center" class="table-light"><h3>조회된
+										데이터가 없습니다</h3></td>
+
+							</tr>
+						</th:block>
+						<tr class="table-secondary table-light"
+							th:each="prior,num:${priorList}" th:align="center"
+							valign="middle">
+							<th scope="row" th:text="${num.count+nowPage*10}"></th>
+							<td><a th:text="${prior.productCode}" href="#"
+								th:onclick="updateAndDelete([[${prior}]])"
+								th:title="${prior.productCode}+' 수정 및 삭제'"></a></td>
+							<td th:text="${prior.lotteUrl}"></td>
+							<td th:text="${prior.shillaUrl}"></td>
+							<td th:text="${prior.hyundaiUrl}"></td>
+							<td
+								th:text="${#dates.format(prior.registerDate,'yyyy-MM-dd HH:mm:ss')}"></td>
+							<td th:text="${prior.period}"></td>
+						</tr>
+
+					</tbody>
+				</table>
+			</div>
+			<br><br>
+			<div>
+			<table width="100%">
+			<tr align="right">
+				<td><button  th:if="${total != 0}" th:onclick="excelDown([[${type}]],[[${searchKeyWord}]],[[${detail}]])"
+					class="btn btn-secondary">데이터 내려받기</button>&nbsp;<button th:if="${productCode != null}" type="button" th:onclick="goMainPage()"
+						class="btn btn-secondary">목록으로</button></td></tr>
+				</table>
+			</div>
+		
+
+			<th:block>
+				<div th:if="${productCode==null && total != 0}">
+					<div th:if="${total != 0}">
+						<nav aria-label="Page navigation example">
+							<ul class="pagination justify-content-center">
+								<li class="page-item "
+									th:classappend="${nowPage == 0}?'disabled'"><a
+									class="page-link" tabindex="-1" aria-disabled="true"
+									th:href="@{/index_crawling(page=${nowPage-1},size=10)}">Previous</a></li>
+								<li class="page-item"
+									th:each="i:${#numbers.sequence(1,totalPages)}"
+									th:classappend="${nowPage+1 ==i}?'disabled'"><a
+									class="page-link" th:text="${i}"
+									th:href="@{/index_crawling(page=${i-1},size=10)}"></a></li>
+								<li class="page-item"
+									th:classappend=" ${nowPage+1 ==totalPages}?'disabled'"><a
+									class="page-link"
+									th:href="@{/index_crawling(page=${nowPage+1},size=10)}"
+									th:classappend="${nowPage+1 == totalPages}?'disabled'">Next</a></li>
+							</ul>
+						</nav>
+
+					</div>
+				</div>
+			</th:block>
+			<div th:if="${productCode != null}">
+				<th:block th:if="${total != 0}">
+					<nav aria-label="Page navigation example">
+						<ul class="pagination justify-content-center">
+							<li class="page-item "
+								th:classappend="${nowPage == 0}?'disabled'"><a
+								class="page-link" tabindex="-1" aria-disabled="true"
+								th:href="@{/searchPrior(page=${nowPage-1},size=10,str=${productCode})}">Previous</a></li>
+							<li class="page-item"
+								th:each="i:${#numbers.sequence(1,totalPages)}"
+								th:classappend="${nowPage+1 ==i}?'disabled'"><a
+								class="page-link" th:text="${i}"
+								th:href="@{/searchPrior(page=${i-1},size=10,str=${productCode})}"></a></li>
+							<li class="page-item"
+								th:classappend=" ${nowPage+1 ==totalPages}?'disabled'"><a
+								class="page-link"
+								th:href="@{/searchPrior(page=${nowPage+1},size=10,str=${productCode})}"
+								th:classappend="${nowPage+1 == totalPages}?'disabled'">Next</a></li>
+						</ul>
+					</nav>
+				</th:block>
+
+				
+			</div>
+		</div>
+
+	</div>
+</body>
+</html>

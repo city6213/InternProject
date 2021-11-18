@@ -1,0 +1,327 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta http-equiv="Cotent-Type" content="text/html; charset=UTF-8">
+<title>크롤링 데이터 수정 및 삭제</title>
+<script src="https://code.jquery.com/jquery-3.3.1.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<link
+	href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css"
+	rel="stylesheet"
+	integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1"
+	crossorigin="anonymous">
+<script
+	src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"
+	integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW"
+	crossorigin="anonymous"></script>
+<script
+	src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"
+	integrity="sha384-q2kxQ16AaE6UbzuKqyBE9/u/KzioAlnx2maXQHiDX9d4/zp8Ok3f+M7DPm+Ib6IU"
+	crossorigin="anonymous"></script>
+<script
+	src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.min.js"
+	integrity="sha384-pQQkAEnwaBkjpqZ8RU1fF1AKtTcHJwFl3pblpTlHXybJjHpMYo79HY3hIi4NKxyj"
+	crossorigin="anonymous"></script>
+<script type="text/javascript" th:inline="javascript">
+	function goBack() {
+		history.go(-1);
+	}
+
+	function updateOrDelete(obj, preLotteUrl, preShillaUrl, preHyundaiUrl) {
+		var productCode = document.prior_form.productCode.value;
+		productCode = encodeURIComponent(productCode);
+		var lotteUrl = document.prior_form.lotteUrl.value;
+		var shillaUrl = document.prior_form.shillaUrl.value;
+		var hyundaiUrl = document.prior_form.hyundaiUrl.value;
+		var period = document.prior_form.period.value;
+		var value = obj.innerText;
+		var urlRegex = /(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
+		var regex = /^[0-9]+$/;
+		var lotteUrlLength = document.getElementById("lotteUrlInput").value.length;
+		var shillaUrlLength = document.getElementById("shillaUrlInput").value.length;
+		var hyundaiUrlLength = document.getElementById("hyundaiUrlInput").value.length;
+
+		/*var url = "/updateOrDeletePrior?value=update&productCode="
+				+ productCode + "&lotteUrl=" + lotteUrl + "&shillaUrl="
+				+ shillaUrl + "&hyundaiUrl=" + hyundaiUrl + "&period=" + period;
+
+		var url2 = "/updateOrDeletePrior?value=delete&productCode="
+				+ productCode + "&lotteUrl=" + lotteUrl + "&shillaUrl="
+				+ shillaUrl + "&hyundaiUrl=" + hyundaiUrl + "&period=" + period;*/
+
+		if (value == '수정') {
+			if (lotteUrl == '') {
+				alert("롯데URL을 입력하세요!");
+				document.prior_form.lotteUrl.focus();
+				return;
+			} else if (period == '') {
+				alert("주기를 입력하세요!");
+				document.prior_form.period.focus();
+				return;
+			}
+
+			if (shillaUrl == '' && hyundaiUrl == '') {
+				alert("신라URL과 현대URL중 적어도 한 개는 입력 되어야합니다!");
+				return;
+			}
+
+			if (shillaUrl != '') {
+				if (!urlRegex.test(shillaUrl)) {
+					alert("신라URL을 확인해주세요!");
+					document.prior_form.shillaUrl.focus();
+					return;
+				}
+			}
+			if (hyundaiUrl != '') {
+				if (!urlRegex.test(hyundaiUrl)) {
+					alert("현대URL을 확인해주세요!");
+					document.prior_form.hyundaiUrl.value.focus();
+					return;
+				}
+			}
+
+			if (!regex.test(period)) {
+				alert("주기는 숫자만 입력 가능합니다.");
+				document.prior_form.period.focus();
+				return;
+			} else if (!urlRegex.test(lotteUrl)) {
+				alert("롯데url을 다시 확인해주세요!");
+				document.prior_form.lotteUrl.focus();
+				return;
+			}
+
+			if (lotteUrlLength > 200) {
+				alert("롯데URL은 최대 200글자까지 입력가능합니다!");
+				document.prior_form.lotteUrl.focus();
+				return;
+			} else if (shillaUrlLength > 200) {
+				alert("신라URL은 최대 200글자까지 입력가능합니다!");
+				document.prior_form.shillaUrl.focus();
+				return;
+			} else if (hyundaiUrlLength > 200) {
+				alert("현대URL은 최대 200글자까지 입력가능합니다!");
+				document.prior_form.hyundaiUrl.focus();
+				return;
+			}
+			if (lotteUrl == shillaUrl || lotteUrl == hyundaiUrl
+					|| shillaUrl == hyundaiUrl) {
+				alert("동일한 URL을 입력하실 수 없습니다!");
+				return;
+			}
+
+			if (confirm('정말 수정 하시겠습니까?')) {
+				
+				if(preLotteUrl == lotteUrl){
+					preLotteUrl = '';
+				}else{
+					preLotteUrl = lotteUrl;
+				}
+				if(preShillaUrl == shillaUrl){
+					preShillaUrl = '';
+				}else{
+					preShillaUrl = shillaUrl;
+				}
+				if(preHyundaiUrl == hyundaiUrl){
+					preHyundaiUrl = '';
+				}else{
+					preHyundaiUrl = hyundaiUrl;
+				}
+				$.ajax({
+					url : '/urlDuplication',
+					method : "post",
+					data : {
+						"type" : "update",
+						"lotteUrl" : preLotteUrl,
+						"shillaUrl" : preShillaUrl,
+						"hyundaiUrl" : preHyundaiUrl
+					},
+					async : false,
+					success : function(data) {
+						console.log(data);
+						if (data.indexOf("lotte") != -1) {
+							alert("롯데URL에 입력하신 URL은 이미 존재하는 URL입니다.");
+							document.prior_form.lotteUrl.focus();
+							return;
+						} else if (data.indexOf("shilla") != -1) {
+							alert("신라URL에 입력하신 URL은 이미 존재하는 URL입니다.");
+							document.prior_form.shillaUrl.focus();
+							return;
+						} else if (data.indexOf("hyundai") != -1) {
+							alert("현대URL에 입력하신 URL은 이미 존재하는 URL입니다.");
+							document.prior_form.hyundaiUrl.focus();
+							return;
+						}
+						location.href = "/updateOrDeletePrior?value=update&productCode="
+							+ productCode
+							+ "&lotteUrl="
+							+ lotteUrl
+							+ "&shillaUrl="
+							+ shillaUrl
+							+ "&hyundaiUrl="
+							+ hyundaiUrl
+							+ "&period="
+							+ period;
+
+
+					},
+					error : function(error) {
+						alert("작동 안함");
+					}
+
+				});
+			}
+		} else if (value == '삭제') {
+
+			if (confirm('정말 삭제 하시겠습니까?')) {
+
+				location.href = "/updateOrDeletePrior?value=delete&productCode="
+						+ productCode
+						+ "&lotteUrl="
+						+ lotteUrl
+						+ "&shillaUrl="
+						+ shillaUrl
+						+ "&hyundaiUrl="
+						+ hyundaiUrl
+						+ "&period="
+						+ period;
+
+			} else {
+				return;
+			}
+		}
+	}
+
+	function resetInput() {
+		document.prior_form.productCode.value = '';
+		document.prior_form.lotteUrl.value = '';
+		document.prior_form.shillaUrl.value = '';
+		document.prior_form.hyundaiUrl.value = '';
+		document.prior_form.period.value = '';
+
+	}
+
+	function lengthCheck() {
+
+		var lotteUrlLength = document.getElementById("lotteUrlInput").value.length;
+		var shillaUrlLength = document.getElementById("shillaUrlInput").value.length;
+		var hyundaiUrlLength = document.getElementById("hyundaiUrlInput").value.length;
+
+		if (lotteUrlLength > 200) {
+			document.getElementById('notice1').style.visibility = 'visible';
+		} else {
+			document.getElementById('notice1').style.visibility = 'hidden';
+		}
+
+		if (shillaUrlLength > 200) {
+			document.getElementById('notice2').style.visibility = 'visible';
+		} else {
+			document.getElementById('notice2').style.visibility = 'hidden';
+		}
+
+		if (hyundaiUrlLength > 200) {
+			document.getElementById('notice3').style.visibility = 'visible';
+		} else {
+			document.getElementById('notice3').style.visibility = 'hidden';
+		}
+
+	}
+</script>
+</head>
+<body>
+	<div id="container">
+		<div id="head" style="height: 150px">
+			<br> <br>
+			<div class="alert alert-primary" role="alert">
+				<h1 align="center">크롤링 데이터 수정 및 삭제</h1>
+			</div>
+		</div>
+		<br> <br>
+		<div id="input">
+			<form method="post" name="prior_form">
+				<table width="800px" align="center">
+
+					<tr>
+						<td><label for="exampleFormControlInput1" class="form-label">
+								<h3>*상품코드</h3>
+						</label> <input type="text" class="form-control " id="productCodeInput"
+							th:value="${prior.productCode}" name="productCode" disabled><br>
+							<br></td>
+
+					</tr>
+					<tr>
+						<td>
+							<div class="mb-3">
+								<label for="exampleFormControlInput1" class="form-label"><h3>*롯데
+										URL(필수)</h3> </label> <input type="text" class="form-control"
+									id="lotteUrlInput" th:value="${prior.lotteUrl}" name="lotteUrl"
+									onkeyup="lengthCheck()">
+							</div>
+						</td>
+					</tr>
+					<tr align="center" style="visibility: hidden" id="notice1">
+						<td><font color="red">최대 200글자만 입력 가능합니다!<br> <br></font></td>
+
+					</tr>
+
+					<tr>
+						<td>
+							<div class="mb-3">
+								<label for="exampleFormControlInput1" class="form-label"><h3>신라
+										URL(선택)</h3> </label> <input type="text" class="form-control"
+									id="shillaUrlInput" th:value="${prior.shillaUrl}"
+									name="shillaUrl" onkeyup="lengthCheck()">
+							</div>
+						</td>
+					</tr>
+					<tr align="center" style="visibility: hidden" id="notice2">
+						<td><font color="red">최대 200글자만 입력 가능합니다!<br> <br></font></td>
+
+					</tr>
+
+					<tr>
+						<td>
+							<div class="mb-3">
+								<label for="exampleFormControlInput1" class="form-label"><h3>현대
+										URL(선택)</h3> </label> <input type="text" class="form-control"
+									id="hyundaiUrlInput" th:value="${prior.hyundaiUrl}"
+									name="hyundaiUrl" onkeyup="lengthCheck()">
+							</div>
+						</td>
+					</tr>
+					<tr align="center" style="visibility: hidden" id="notice3">
+						<td><font color="red">최대 200글자만 입력 가능합니다!<br> <br></font></td>
+
+					</tr>
+
+					<tr>
+						<td>
+							<div class="mb-3">
+								<label for="exampleFormControlInput1" class="form-label"><h3>*주기(필수)
+										- 시간단위입력</h3> </label> <input type="text" class="form-control"
+									id="periodInput" th:value="${prior.period}" name="period"
+									maxlength="2">
+							</div>
+						</td>
+					</tr>
+					<tr align="right">
+
+						<td><div class="btn-group" role="group"
+								aria-label="Basic example">
+								<button type="button" class="btn btn-primary"
+									th:onclick="updateOrDelete(this,[[${preLotteUrl}]],[[${preShillaUrl}]],[[${preHyundaiUrl}]])">수정</button>
+								<button type="button" class="btn btn-primary"
+									th:onclick="updateOrDelete(this)">삭제</button>
+								<button type="button" class="btn btn-primary"
+									th:onclick="goBack()">돌아가기</button>
+							</div></td>
+					</tr>
+				</table>
+			</form>
+		</div>
+	</div>
+
+
+</body>
+
+
+
+</html>
